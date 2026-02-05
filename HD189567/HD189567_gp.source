@@ -1,0 +1,2 @@
+pyorbit_run dynesty HD189567_gp.yaml
+pyorbit_results dynesty HD189567_gp.yaml -all > HD189567_gp_HARPS_ESPRESSO_dynesty.log

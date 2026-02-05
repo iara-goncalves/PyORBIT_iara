@@ -1,0 +1,594 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PyORBIT Dynesty Model Comparison</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #fafafa;
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .dataset-section {
+            background-color: white;
+            margin: 30px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .dataset-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .config-section {
+            margin: 0;
+            padding: 25px 30px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .config-section:last-child {
+            border-bottom: none;
+        }
+        h2 { 
+            color: #34495e;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        h3 {
+            color: #2c3e50;
+            margin: 15px 0 8px 0;
+            font-size: 15px;
+            font-weight: 600;
+            background-color: #ecf0f1;
+            padding: 6px 10px;
+            border-radius: 4px;
+        }
+        table { 
+            border-collapse: collapse; 
+            margin: 10px 0 20px 0;
+            width: 100%;
+            background-color: white;
+        }
+        .params-summary-section {
+            margin: 20px;
+            padding: 18px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .params-table {
+            border-collapse: collapse;
+            margin: 10px 0;
+            width: 100%;
+            background-color: white;
+            border: 2px solid #3498db;
+            font-size: 12px;
+        }
+        .params-table th {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 6px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #2980b9;
+            font-size: 11px;
+        }
+        .params-table td {
+            padding: 6px 6px;
+            border: 1px solid #bdc3c7;
+            text-align: center;
+        }
+        .params-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .params-table tr:hover {
+            background-color: #e8f4f8;
+        }
+        th, td { 
+            padding: 10px 12px; 
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        th { 
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            color: #34495e;
+            font-size: 14px;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background-color: #f8f9fa;
+        }
+        .highlight-logz {
+            background-color: #e8f5e9 !important;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        .highlight-bic {
+            background-color: #fff3e0 !important;
+            font-weight: 600;
+            color: #e65100;
+        }
+        .legend {
+            margin: 0 0 30px 0;
+            padding: 20px 25px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .legend h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 17px;
+            font-weight: 600;
+            background: none;
+            padding: 0;
+        }
+        .legend-item {
+            margin: 6px 0;
+            color: #34495e;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-green {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .badge-orange {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+        .gp-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-top: 5px;
+            margin-bottom: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PyORBIT Dynesty Model Comparison</h1>
+        <div class="subtitle">Bayesian Evidence Analysis via Nested Sampling</div>
+        
+        <div class="legend">
+            <h3>Interpretation Guide</h3>
+            <div class="legend-item"><strong>ConfigGroup:</strong> all_instr, espresso_only, no_espresso, UCLES_only, all_instr_ESPRESSO_GP</div>
+            <div class="legend-item"><strong>GPType separation:</strong> gp and no_gp are NOT compared directly; all Δlog(Z), ΔBIC are computed within the same GPType only.</div>
+            <div class="legend-item"><span class="badge badge-green">Green highlight</span> = Best log(Z) (highest evidence) within a given (ConfigGroup, GPType)</div>
+            <div class="legend-item"><span class="badge badge-orange">Orange highlight</span> = Best BIC (lowest value) within a given (ConfigGroup, GPType)</div>
+        </div>
+        <div class="dataset-section">
+            <div class="dataset-header">HD102365</div>
+            <div class="config-section">
+                <h2>ConfigGroup: all_instr</h2>
+                <div class="gp-label">GPType: gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>log(Z)</th><th>Δlog(Z)</th><th>Median BIC</th><th>ΔBIC</th><th>Efficiency %</th><th>N calls</th></tr>
+                    <tr>
+                        <td>all_instr_espresso_gp_0p_dynesty</td>
+                        <td>0p</td>
+                        <td class="highlight-logz">-1244.94 ± 0.34</td>
+                        <td class="highlight-logz">0.00</td>
+                        <td class="highlight-bic">2460.91</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td>0.55%</td>
+                        <td>32,783,285</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_espresso_gp_1p_dynesty</td>
+                        <td>1p</td>
+                        <td class="">-4131.51 ± 0.60</td>
+                        <td class="">-2886.56</td>
+                        <td class="">8078.53</td>
+                        <td class="">5617.62</td>
+                        <td>0.37%</td>
+                        <td>61,520,577</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_espresso_gp_2p_dynesty</td>
+                        <td>2p</td>
+                        <td class="">-4116.36 ± 0.74</td>
+                        <td class="">-2871.42</td>
+                        <td class="">7981.40</td>
+                        <td class="">5520.49</td>
+                        <td>0.32%</td>
+                        <td>74,616,202</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_espresso_gp_3p_dynesty</td>
+                        <td>3p</td>
+                        <td class="">-4134.83 ± 0.62</td>
+                        <td class="">-2889.89</td>
+                        <td class="">8025.28</td>
+                        <td class="">5564.37</td>
+                        <td>0.27%</td>
+                        <td>90,572,308</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models by log(Z) for GPType = gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>K (m/s)</th><th>mean_long (°)</th><th>e</th><th>ω (°)</th></tr>
+                        <tr>
+                            <td>all_instr_espresso_gp_0p_dynesty</td><td>0p</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">all_instr_espresso_gp_1p_dynesty</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>42.1</td><td>0.76</td><td>175</td>
+                            <td>0.41</td><td>-137</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">all_instr_espresso_gp_2p_dynesty</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>120.137</td><td>1.13</td><td>174.0</td>
+                            <td>0.660</td><td>-74</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>214.096</td><td>1.45</td><td>190.9</td>
+                            <td>0.777</td><td>-6.9</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">all_instr_espresso_gp_3p_dynesty</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>47.4104</td><td>1.24</td><td>93</td>
+                            <td>0.773</td><td>-71</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>680.86</td><td>1.35</td><td>63.1</td>
+                            <td>0.784</td><td>2.4</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>90.75</td><td>0.63</td><td>182</td>
+                            <td>0.41</td><td>31</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Pdec (days)</th><th>Oamp</th></tr>
+                        <tr>
+                            <td>all_instr_espresso_gp_0p_dynesty</td><td>0p</td>
+                            <td>21.88</td><td>17.2</td><td>0.405</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_espresso_gp_1p_dynesty</td><td>1p</td>
+                            <td>21.88</td><td>19.0</td><td>0.404</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_espresso_gp_2p_dynesty</td><td>2p</td>
+                            <td>21.23</td><td>18.3</td><td>0.384</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_espresso_gp_3p_dynesty</td><td>3p</td>
+                            <td>21.49</td><td>16.9</td><td>0.431</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="gp-label">GPType: unknown</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>log(Z)</th><th>Δlog(Z)</th><th>Median BIC</th><th>ΔBIC</th><th>Efficiency %</th><th>N calls</th></tr>
+                    <tr>
+                        <td>all_instr_0p_dynesty</td>
+                        <td>0p</td>
+                        <td class="highlight-logz">96.20 ± 1.33</td>
+                        <td class="highlight-logz">0.00</td>
+                        <td class="highlight-bic">-477.65</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td>0.26%</td>
+                        <td>78,893,982</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_1p_dynesty</td>
+                        <td>1p</td>
+                        <td class="">57.45 ± 0.56</td>
+                        <td class="">-38.74</td>
+                        <td class="">-196.18</td>
+                        <td class="">281.47</td>
+                        <td>0.20%</td>
+                        <td>85,820,620</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_2p_dynesty</td>
+                        <td>2p</td>
+                        <td class="">-182.95 ± 0.51</td>
+                        <td class="">-279.14</td>
+                        <td class="">443.48</td>
+                        <td class="">921.13</td>
+                        <td>0.20%</td>
+                        <td>73,424,461</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_3p_dynesty</td>
+                        <td>3p</td>
+                        <td class="">-354.16 ± 0.58</td>
+                        <td class="">-450.36</td>
+                        <td class="">814.33</td>
+                        <td class="">1291.98</td>
+                        <td>0.19%</td>
+                        <td>74,774,186</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models by log(Z) for GPType = unknown)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>K (m/s)</th><th>mean_long (°)</th><th>e</th><th>ω (°)</th></tr>
+                        <tr>
+                            <td>all_instr_0p_dynesty</td><td>0p</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">all_instr_1p_dynesty</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>3.612</td><td>0.1637</td><td>54.9</td>
+                            <td>0.7001</td><td>-129.68</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">all_instr_2p_dynesty</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>3.99</td><td>0.388</td><td>258.6</td>
+                            <td>0.709</td><td>24.5</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>4510</td><td>0.3106</td><td>170.60</td>
+                            <td>0.585</td><td>155.0</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">all_instr_3p_dynesty</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>4066</td><td>0.711</td><td>77.1</td>
+                            <td>0.0832</td><td>-132</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>1431.5</td><td>1.074</td><td>309.43</td>
+                            <td>0.7009</td><td>-143.1</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>1.1467</td><td>0.209</td><td>35.1</td>
+                            <td>0.759</td><td>76.60</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Pdec (days)</th><th>Oamp</th></tr>
+                        <tr>
+                            <td>all_instr_0p_dynesty</td><td>0p</td>
+                            <td>30.55</td><td>20.0</td><td>0.851</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_1p_dynesty</td><td>1p</td>
+                            <td>23.66</td><td>11.50</td><td>0.632</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_2p_dynesty</td><td>2p</td>
+                            <td>41.54</td><td>33.61</td><td>0.609</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_3p_dynesty</td><td>3p</td>
+                            <td>48.66</td><td>21.27</td><td>0.3658</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="config-section">
+                <h2>ConfigGroup: espresso_only</h2>
+                <div class="gp-label">GPType: unknown</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>log(Z)</th><th>Δlog(Z)</th><th>Median BIC</th><th>ΔBIC</th><th>Efficiency %</th><th>N calls</th></tr>
+                    <tr>
+                        <td>espresso_only_0p_dynesty</td>
+                        <td>0p</td>
+                        <td class="">-1267.88 ± 0.43</td>
+                        <td class="">-25.22</td>
+                        <td class="highlight-bic">2377.25</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td>2.58%</td>
+                        <td>6,204,395</td>
+                    </tr>
+                    <tr>
+                        <td>espresso_only_1p_dynesty</td>
+                        <td>1p</td>
+                        <td class="highlight-logz">-1242.66 ± 0.76</td>
+                        <td class="highlight-logz">0.00</td>
+                        <td class="">2399.44</td>
+                        <td class="">22.19</td>
+                        <td>0.51%</td>
+                        <td>24,305,102</td>
+                    </tr>
+                    <tr>
+                        <td>espresso_only_2p_dynesty</td>
+                        <td>2p</td>
+                        <td class="">-1252.98 ± 0.48</td>
+                        <td class="">-10.32</td>
+                        <td class="">2442.98</td>
+                        <td class="">65.73</td>
+                        <td>0.42%</td>
+                        <td>30,107,021</td>
+                    </tr>
+                    <tr>
+                        <td>espresso_only_3p_dynesty</td>
+                        <td>3p</td>
+                        <td class="">-1246.89 ± 0.36</td>
+                        <td class="">-4.24</td>
+                        <td class="">2484.62</td>
+                        <td class="">107.37</td>
+                        <td>0.36%</td>
+                        <td>37,788,643</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models by log(Z) for GPType = unknown)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>K (m/s)</th><th>mean_long (°)</th><th>e</th><th>ω (°)</th></tr>
+                        <tr>
+                            <td>espresso_only_0p_dynesty</td><td>0p</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">espresso_only_1p_dynesty</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>41.7</td><td>0.227</td><td>200</td>
+                            <td>0.22</td><td>0</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">espresso_only_2p_dynesty</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>44</td><td>0.193</td><td>214</td>
+                            <td>0.135</td><td>-157</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>48</td><td>0.160</td><td>160</td>
+                            <td>0.13</td><td>-48</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">espresso_only_3p_dynesty</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>196</td><td>0.147</td><td>335</td>
+                            <td>0.436</td><td>153.4</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>47.9</td><td>0.228</td><td>245</td>
+                            <td>0.260</td><td>-96.1</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>81</td><td>0.274</td><td>304</td>
+                            <td>0.155</td><td>-165</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Pdec (days)</th><th>Oamp</th></tr>
+                        <tr>
+                            <td>espresso_only_0p_dynesty</td><td>0p</td>
+                            <td>21.88</td><td>17.0</td><td>0.405</td>
+                        </tr>
+                        <tr>
+                            <td>espresso_only_1p_dynesty</td><td>1p</td>
+                            <td>22.11</td><td>16.8</td><td>0.385</td>
+                        </tr>
+                        <tr>
+                            <td>espresso_only_2p_dynesty</td><td>2p</td>
+                            <td>22.12</td><td>14.9</td><td>0.413</td>
+                        </tr>
+                        <tr>
+                            <td>espresso_only_3p_dynesty</td><td>3p</td>
+                            <td>22.49</td><td>16.9</td><td>0.447</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="config-section">
+                <h2>ConfigGroup: no_espresso</h2>
+                <div class="gp-label">GPType: unknown</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>log(Z)</th><th>Δlog(Z)</th><th>Median BIC</th><th>ΔBIC</th><th>Efficiency %</th><th>N calls</th></tr>
+                    <tr>
+                        <td>no_espresso_0p_dynesty</td>
+                        <td>0p</td>
+                        <td class="">1236.55 ± 0.61</td>
+                        <td class="">-74.09</td>
+                        <td class="">-2591.51</td>
+                        <td class="">141.26</td>
+                        <td>0.34%</td>
+                        <td>81,110,778</td>
+                    </tr>
+                    <tr>
+                        <td>no_espresso_1p_dynesty</td>
+                        <td>1p</td>
+                        <td class="highlight-logz">1310.63 ± 0.59</td>
+                        <td class="highlight-logz">0.00</td>
+                        <td class="highlight-bic">-2732.77</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td>0.29%</td>
+                        <td>100,562,545</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models by log(Z) for GPType = unknown)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>K (m/s)</th><th>mean_long (°)</th><th>e</th><th>ω (°)</th></tr>
+                        <tr>
+                            <td>no_espresso_0p_dynesty</td><td>0p</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">no_espresso_1p_dynesty</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>287</td><td>0.234</td><td>264</td>
+                            <td>0.044</td><td>-7</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Pdec (days)</th><th>Oamp</th></tr>
+                        <tr>
+                            <td>no_espresso_0p_dynesty</td><td>0p</td>
+                            <td>45.2</td><td>25.0</td><td>0.743</td>
+                        </tr>
+                        <tr>
+                            <td>no_espresso_1p_dynesty</td><td>1p</td>
+                            <td>45.01</td><td>36.2</td><td>0.569</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

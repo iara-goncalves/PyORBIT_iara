@@ -1,0 +1,1231 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PyORBIT Model Comparison Results (HD102365 emcee)</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #fafafa;
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        .dataset-section {
+            background-color: white;
+            margin: 30px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .dataset-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .config-section {
+            margin: 0;
+            padding: 25px 30px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .config-section:last-child {
+            border-bottom: none;
+        }
+        h2 { 
+            color: #34495e;
+            margin: 20px 0 10px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        h3 {
+            color: #2c3e50;
+            margin: 15px 0 8px 0;
+            font-size: 15px;
+            font-weight: 600;
+            background-color: #ecf0f1;
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+        .gp-label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 5px;
+            margin-bottom: 3px;
+            color: #2c3e50;
+        }
+        table { 
+            border-collapse: collapse; 
+            margin: 15px 0;
+            width: 100%;
+            background-color: white;
+            font-size: 13px;
+        }
+        .params-summary-section {
+            margin: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .params-table {
+            border-collapse: collapse;
+            margin: 10px 0;
+            width: 100%;
+            background-color: white;
+            border: 2px solid #3498db;
+            font-size: 12px;
+        }
+        .params-table th {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 6px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #2980b9;
+            font-size: 11px;
+        }
+        .params-table td {
+            padding: 6px 6px;
+            border: 1px solid #bdc3c7;
+            text-align: center;
+        }
+        .params-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .params-table tr:hover {
+            background-color: #e8f4f8;
+        }
+        .gr-converged {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        .gr-not-converged {
+            color: #c62828;
+            font-weight: 600;
+        }
+        th, td { 
+            padding: 10px 14px; 
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        th { 
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            color: #34495e;
+            font-size: 14px;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background-color: #f8f9fa;
+        }
+        .highlight-bic {
+            background-color: #e8f5e9 !important;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        .convergence-good {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        .convergence-warning {
+            color: #f57c00;
+            font-weight: 600;
+        }
+        .convergence-bad {
+            color: #c62828;
+            font-weight: 600;
+        }
+        .legend {
+            margin: 0 0 30px 0;
+            padding: 20px 25px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .legend h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            background: none;
+            padding: 0;
+        }
+        .legend-item {
+            margin: 8px 0;
+            color: #34495e;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .badge-green {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PyORBIT Model Comparison Results (HD102365 emcee)</h1>
+        
+        <div class="legend">
+            <h3>Legend</h3>
+            <div class="legend-item"><span class="badge badge-green">Green highlight</span> = Best BIC within a given (Dataset, ConfigGroup, GPType)</div>
+            <div class="legend-item"><strong>ConfigGroup:</strong> all_instr, espresso_only, no_espresso, UCLES_only, all_instr_ESPRESSO_GP</div>
+            <div class="legend-item"><strong>GPType:</strong> gp or no_gp; gp and no_gp are not compared directly.</div>
+            <div class="legend-item"><strong>Convergence %:</strong> Percentage of parameters with Gelman-Rubin &lt; 1.1</div>
+            <div class="legend-item"><strong>Max GR:</strong> Maximum Gelman-Rubin value across all parameters</div>
+        </div>
+        <div class="dataset-section">
+            <div class="dataset-header">HD102365</div>
+            <div class="config-section">
+                <h2>ConfigGroup: all_instr</h2>
+                <div class="gp-label">GPType: gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>all_instr_gp_0p_emcee</td>
+                        <td>0p</td>
+                        <td class="">-823.15</td>
+                        <td class="">77.73</td>
+                        <td class="convergence-bad">85.2%</td>
+                        <td>1.1880</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_gp_1p_emcee</td>
+                        <td>1p</td>
+                        <td class="">-894.31</td>
+                        <td class="">6.57</td>
+                        <td class="convergence-bad">78.1%</td>
+                        <td>1.2029</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_gp_2p_emcee</td>
+                        <td>2p</td>
+                        <td class="highlight-bic">-900.88</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-bad">86.5%</td>
+                        <td>1.1858</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td>all_instr_gp_0p_emcee</td><td>0p</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">all_instr_gp_1p_emcee</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>41.7275</td><td class="gr-converged">1.070</td>
+                            <td>0.8976</td><td class="gr-converged">1.074</td>
+                            <td>306.13</td><td class="gr-converged">1.068</td>
+                            <td>0.3298</td><td>-43.19</td>
+                            <td class="gr-converged">1.064</td><td class="gr-converged">1.089</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">all_instr_gp_2p_emcee</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>121.7608</td><td class="gr-converged">1.083</td>
+                            <td>0.9503</td><td class="gr-converged">1.082</td>
+                            <td>316.52</td><td class="gr-converged">1.083</td>
+                            <td>0.3655</td><td>41.64</td>
+                            <td class="gr-converged">1.086</td><td class="gr-converged">1.093</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>41.4106</td><td class="gr-converged">1.091</td>
+                            <td>0.9751</td><td class="gr-converged">1.072</td>
+                            <td>108.76</td><td class="gr-converged">1.091</td>
+                            <td>0.3828</td><td>-64.95</td>
+                            <td class="gr-converged">1.092</td><td class="gr-converged">1.088</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>all_instr_gp_0p_emcee</td><td>0p</td>
+                            <td>22.4257</td><td class="gr-not-converged">1.154</td>
+                            <td>21.6390</td><td class="gr-converged">1.068</td>
+                            <td>0.5084</td><td class="gr-converged">1.067</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_gp_1p_emcee</td><td>1p</td>
+                            <td>22.3499</td><td class="gr-not-converged">1.112</td>
+                            <td>22.6871</td><td class="gr-converged">1.079</td>
+                            <td>0.4958</td><td class="gr-converged">1.085</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_gp_2p_emcee</td><td>2p</td>
+                            <td>23.7561</td><td class="gr-converged">1.080</td>
+                            <td>17.5613</td><td class="gr-not-converged">1.115</td>
+                            <td>0.4849</td><td class="gr-converged">1.074</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="gp-label">GPType: no_gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>all_instr_no_gp_1p_emcee</td>
+                        <td>1p</td>
+                        <td class="">7575.69</td>
+                        <td class="">190.64</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0131</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_no_gp_2p_emcee</td>
+                        <td>2p</td>
+                        <td class="">7419.99</td>
+                        <td class="">34.94</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0328</td>
+                    </tr>
+                    <tr>
+                        <td>all_instr_no_gp_3p_emcee</td>
+                        <td>3p</td>
+                        <td class="highlight-bic">7385.05</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0497</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = no_gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td rowspan="1">all_instr_no_gp_1p_emcee</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>1411.1056</td><td class="gr-converged">1.004</td>
+                            <td>1.0854</td><td class="gr-converged">1.005</td>
+                            <td>254.27</td><td class="gr-converged">1.004</td>
+                            <td>0.3767</td><td>-7.87</td>
+                            <td class="gr-converged">1.005</td><td class="gr-converged">1.004</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">all_instr_no_gp_2p_emcee</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>42.0151</td><td class="gr-converged">1.024</td>
+                            <td>1.0459</td><td class="gr-converged">1.010</td>
+                            <td>78.28</td><td class="gr-converged">1.024</td>
+                            <td>0.3762</td><td>-12.67</td>
+                            <td class="gr-converged">1.033</td><td class="gr-converged">1.014</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>620.2220</td><td class="gr-converged">1.008</td>
+                            <td>1.1538</td><td class="gr-converged">1.009</td>
+                            <td>270.14</td><td class="gr-converged">1.007</td>
+                            <td>0.3732</td><td>-6.17</td>
+                            <td class="gr-converged">1.012</td><td class="gr-converged">1.011</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">all_instr_no_gp_3p_emcee</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>113.0616</td><td class="gr-converged">1.016</td>
+                            <td>0.4856</td><td class="gr-converged">1.011</td>
+                            <td>1.43</td><td class="gr-converged">1.017</td>
+                            <td>0.3478</td><td>75.81</td>
+                            <td class="gr-converged">1.016</td><td class="gr-converged">1.021</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>42.0230</td><td class="gr-converged">1.041</td>
+                            <td>1.0367</td><td class="gr-converged">1.012</td>
+                            <td>83.45</td><td class="gr-converged">1.041</td>
+                            <td>0.3861</td><td>-21.18</td>
+                            <td class="gr-converged">1.050</td><td class="gr-converged">1.017</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>619.7607</td><td class="gr-converged">1.013</td>
+                            <td>1.0716</td><td class="gr-converged">1.013</td>
+                            <td>271.79</td><td class="gr-converged">1.013</td>
+                            <td>0.3922</td><td>6.07</td>
+                            <td class="gr-converged">1.021</td><td class="gr-converged">1.014</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>all_instr_no_gp_1p_emcee</td><td>1p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_no_gp_2p_emcee</td><td>2p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>all_instr_no_gp_3p_emcee</td><td>3p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="config-section">
+                <h2>ConfigGroup: espresso_only</h2>
+                <div class="gp-label">GPType: gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>espresso_only_gp_0p_emcee</td>
+                        <td>0p</td>
+                        <td class="">2377.32</td>
+                        <td class="">14.97</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0090</td>
+                    </tr>
+                    <tr>
+                        <td>espresso_only_gp_1p_emcee</td>
+                        <td>1p</td>
+                        <td class="highlight-bic">2362.35</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0303</td>
+                    </tr>
+                    <tr>
+                        <td>espresso_only_gp_2p_emcee</td>
+                        <td>2p</td>
+                        <td class="">2387.34</td>
+                        <td class="">24.99</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0752</td>
+                    </tr>
+                    <tr>
+                        <td>espresso_only_gp_3p_emcee</td>
+                        <td>3p</td>
+                        <td class="">2401.45</td>
+                        <td class="">39.10</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0751</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td>espresso_only_gp_0p_emcee</td><td>0p</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">espresso_only_gp_1p_emcee</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>41.6537</td><td class="gr-converged">1.006</td>
+                            <td>0.9142</td><td class="gr-converged">1.006</td>
+                            <td>188.91</td><td class="gr-converged">1.006</td>
+                            <td>0.2769</td><td>-16.93</td>
+                            <td class="gr-converged">1.009</td><td class="gr-converged">1.007</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">espresso_only_gp_2p_emcee</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>41.7200</td><td class="gr-converged">1.014</td>
+                            <td>0.8084</td><td class="gr-converged">1.012</td>
+                            <td>299.76</td><td class="gr-converged">1.013</td>
+                            <td>0.2787</td><td>-54.66</td>
+                            <td class="gr-converged">1.013</td><td class="gr-converged">1.015</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>57.7429</td><td class="gr-converged">1.014</td>
+                            <td>0.3999</td><td class="gr-converged">1.012</td>
+                            <td>216.50</td><td class="gr-converged">1.013</td>
+                            <td>0.0060</td><td>178.79</td>
+                            <td class="gr-converged">1.009</td><td class="gr-converged">1.015</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">espresso_only_gp_3p_emcee</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>231.6347</td><td class="gr-converged">1.020</td>
+                            <td>0.5376</td><td class="gr-converged">1.026</td>
+                            <td>-8.88</td><td class="gr-converged">1.020</td>
+                            <td>0.1705</td><td>50.75</td>
+                            <td class="gr-converged">1.026</td><td class="gr-converged">1.023</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>41.5865</td><td class="gr-converged">1.020</td>
+                            <td>0.7291</td><td class="gr-converged">1.017</td>
+                            <td>79.42</td><td class="gr-converged">1.020</td>
+                            <td>0.2295</td><td>-54.64</td>
+                            <td class="gr-converged">1.027</td><td class="gr-converged">1.022</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>55.7642</td><td class="gr-converged">1.021</td>
+                            <td>0.5039</td><td class="gr-converged">1.028</td>
+                            <td>276.49</td><td class="gr-converged">1.021</td>
+                            <td>0.0686</td><td>84.04</td>
+                            <td class="gr-converged">1.015</td><td class="gr-converged">1.022</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>espresso_only_gp_0p_emcee</td><td>0p</td>
+                            <td>21.9922</td><td class="gr-converged">1.003</td>
+                            <td>17.1199</td><td class="gr-converged">1.003</td>
+                            <td>0.3965</td><td class="gr-converged">1.003</td>
+                        </tr>
+                        <tr>
+                            <td>espresso_only_gp_1p_emcee</td><td>1p</td>
+                            <td>25.2402</td><td class="gr-converged">1.009</td>
+                            <td>21.8591</td><td class="gr-converged">1.005</td>
+                            <td>0.5044</td><td class="gr-converged">1.007</td>
+                        </tr>
+                        <tr>
+                            <td>espresso_only_gp_2p_emcee</td><td>2p</td>
+                            <td>22.1476</td><td class="gr-converged">1.019</td>
+                            <td>26.1826</td><td class="gr-converged">1.011</td>
+                            <td>0.5308</td><td class="gr-converged">1.013</td>
+                        </tr>
+                        <tr>
+                            <td>espresso_only_gp_3p_emcee</td><td>3p</td>
+                            <td>24.3747</td><td class="gr-converged">1.029</td>
+                            <td>27.5086</td><td class="gr-converged">1.020</td>
+                            <td>0.5386</td><td class="gr-converged">1.023</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="gp-label">GPType: no_gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>espresso_only_no_gp_1p_emcee</td>
+                        <td>1p</td>
+                        <td class="">1796.88</td>
+                        <td class="">64.64</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0042</td>
+                    </tr>
+                    <tr>
+                        <td>espresso_only_no_gp_2p_emcee</td>
+                        <td>2p</td>
+                        <td class="highlight-bic">1732.24</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0130</td>
+                    </tr>
+                    <tr>
+                        <td>espresso_only_no_gp_3p_emcee</td>
+                        <td>3p</td>
+                        <td class="">2594.43</td>
+                        <td class="">862.19</td>
+                        <td class="convergence-bad">0.0%</td>
+                        <td>nan</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = no_gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td rowspan="1">espresso_only_no_gp_1p_emcee</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>70.3082</td><td class="gr-converged">1.002</td>
+                            <td>1.6110</td><td class="gr-converged">1.002</td>
+                            <td>251.11</td><td class="gr-converged">1.002</td>
+                            <td>0.3962</td><td>15.30</td>
+                            <td class="gr-converged">1.002</td><td class="gr-converged">1.002</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">espresso_only_no_gp_2p_emcee</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>41.9614</td><td class="gr-converged">1.005</td>
+                            <td>1.2334</td><td class="gr-converged">1.004</td>
+                            <td>343.47</td><td class="gr-converged">1.005</td>
+                            <td>0.3922</td><td>-15.76</td>
+                            <td class="gr-converged">1.006</td><td class="gr-converged">1.007</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>1488.8260</td><td class="gr-converged">1.007</td>
+                            <td>1.1849</td><td class="gr-converged">1.004</td>
+                            <td>6.59</td><td class="gr-converged">1.007</td>
+                            <td>0.2897</td><td>-7.04</td>
+                            <td class="gr-converged">1.006</td><td class="gr-converged">1.005</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">espresso_only_no_gp_3p_emcee</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>113.4473</td><td class="">-</td>
+                            <td>0.8635</td><td class="">-</td>
+                            <td>104.44</td><td class="">-</td>
+                            <td>0.3284</td><td>5.67</td>
+                            <td class="">-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>570.2044</td><td class="">-</td>
+                            <td>0.8282</td><td class="">-</td>
+                            <td>234.44</td><td class="">-</td>
+                            <td>0.1902</td><td>1.26</td>
+                            <td class="">-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>249.4864</td><td class="">-</td>
+                            <td>0.8806</td><td class="">-</td>
+                            <td>196.88</td><td class="">-</td>
+                            <td>0.2113</td><td>43.44</td>
+                            <td class="">-</td><td class="">-</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>espresso_only_no_gp_1p_emcee</td><td>1p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>espresso_only_no_gp_2p_emcee</td><td>2p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>espresso_only_no_gp_3p_emcee</td><td>3p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="config-section">
+                <h2>ConfigGroup: no_espresso</h2>
+                <div class="gp-label">GPType: gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>no_espresso_gp_0p_emcee</td>
+                        <td>0p</td>
+                        <td class="">-3268.59</td>
+                        <td class="">70.96</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0850</td>
+                    </tr>
+                    <tr>
+                        <td>no_espresso_gp_1p_emcee</td>
+                        <td>1p</td>
+                        <td class="highlight-bic">-3339.55</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0761</td>
+                    </tr>
+                    <tr>
+                        <td>no_espresso_gp_2p_emcee</td>
+                        <td>2p</td>
+                        <td class="">-3318.33</td>
+                        <td class="">21.22</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0970</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td>no_espresso_gp_0p_emcee</td><td>0p</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">no_espresso_gp_1p_emcee</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>121.4524</td><td class="gr-converged">1.053</td>
+                            <td>1.7207</td><td class="gr-converged">1.049</td>
+                            <td>310.87</td><td class="gr-converged">1.050</td>
+                            <td>0.3483</td><td>73.54</td>
+                            <td class="gr-converged">1.052</td><td class="gr-converged">1.066</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">no_espresso_gp_2p_emcee</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>44.1123</td><td class="gr-converged">1.079</td>
+                            <td>0.6613</td><td class="gr-converged">1.097</td>
+                            <td>-14.41</td><td class="gr-converged">1.080</td>
+                            <td>0.0026</td><td>51.90</td>
+                            <td class="gr-converged">1.046</td><td class="gr-converged">1.043</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>121.1698</td><td class="gr-converged">1.075</td>
+                            <td>1.6519</td><td class="gr-converged">1.072</td>
+                            <td>284.34</td><td class="gr-converged">1.074</td>
+                            <td>0.3816</td><td>62.70</td>
+                            <td class="gr-converged">1.071</td><td class="gr-converged">1.082</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>no_espresso_gp_0p_emcee</td><td>0p</td>
+                            <td>22.5449</td><td class="gr-converged">1.085</td>
+                            <td>30.8217</td><td class="gr-converged">1.071</td>
+                            <td>0.5603</td><td class="gr-converged">1.043</td>
+                        </tr>
+                        <tr>
+                            <td>no_espresso_gp_1p_emcee</td><td>1p</td>
+                            <td>23.1735</td><td class="gr-converged">1.051</td>
+                            <td>27.6378</td><td class="gr-converged">1.076</td>
+                            <td>0.5038</td><td class="gr-converged">1.058</td>
+                        </tr>
+                        <tr>
+                            <td>no_espresso_gp_2p_emcee</td><td>2p</td>
+                            <td>22.8228</td><td class="gr-converged">1.090</td>
+                            <td>30.2479</td><td class="gr-converged">1.095</td>
+                            <td>0.5675</td><td class="gr-converged">1.085</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="gp-label">GPType: no_gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>no_espresso_no_gp_1p_emcee</td>
+                        <td>1p</td>
+                        <td class="">5614.78</td>
+                        <td class="">112.94</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0587</td>
+                    </tr>
+                    <tr>
+                        <td>no_espresso_no_gp_2p_emcee</td>
+                        <td>2p</td>
+                        <td class="">5518.77</td>
+                        <td class="">16.93</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0075</td>
+                    </tr>
+                    <tr>
+                        <td>no_espresso_no_gp_3p_emcee</td>
+                        <td>3p</td>
+                        <td class="highlight-bic">5501.84</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0453</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = no_gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td rowspan="1">no_espresso_no_gp_1p_emcee</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>120.1789</td><td class="gr-converged">1.058</td>
+                            <td>1.4358</td><td class="gr-converged">1.005</td>
+                            <td>172.54</td><td class="gr-converged">1.058</td>
+                            <td>0.3496</td><td>-74.17</td>
+                            <td class="gr-converged">1.045</td><td class="gr-converged">1.059</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">no_espresso_no_gp_2p_emcee</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>44.0876</td><td class="gr-converged">1.006</td>
+                            <td>1.3477</td><td class="gr-converged">1.005</td>
+                            <td>322.40</td><td class="gr-converged">1.006</td>
+                            <td>0.3081</td><td>-97.71</td>
+                            <td class="gr-converged">1.006</td><td class="gr-converged">1.008</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>120.1663</td><td class="gr-converged">1.004</td>
+                            <td>1.5562</td><td class="gr-converged">1.005</td>
+                            <td>169.34</td><td class="gr-converged">1.004</td>
+                            <td>0.3720</td><td>-79.93</td>
+                            <td class="gr-converged">1.005</td><td class="gr-converged">1.006</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">no_espresso_no_gp_3p_emcee</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>125.0693</td><td class="gr-converged">1.045</td>
+                            <td>1.3623</td><td class="gr-converged">1.042</td>
+                            <td>337.62</td><td class="gr-converged">1.044</td>
+                            <td>0.3847</td><td>-159.20</td>
+                            <td class="gr-converged">1.037</td><td class="gr-converged">1.021</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>44.1092</td><td class="gr-converged">1.012</td>
+                            <td>1.0952</td><td class="gr-converged">1.015</td>
+                            <td>342.37</td><td class="gr-converged">1.012</td>
+                            <td>0.3333</td><td>-77.04</td>
+                            <td class="gr-converged">1.013</td><td class="gr-converged">1.014</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>120.6929</td><td class="gr-converged">1.043</td>
+                            <td>1.8867</td><td class="gr-converged">1.014</td>
+                            <td>231.90</td><td class="gr-converged">1.040</td>
+                            <td>0.1569</td><td>40.92</td>
+                            <td class="gr-converged">1.023</td><td class="gr-converged">1.039</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>no_espresso_no_gp_1p_emcee</td><td>1p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>no_espresso_no_gp_2p_emcee</td><td>2p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>no_espresso_no_gp_3p_emcee</td><td>3p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="dataset-section">
+            <div class="dataset-header">HD102365_UCLES_only</div>
+            <div class="config-section">
+                <h2>ConfigGroup: UCLES_only</h2>
+                <div class="gp-label">GPType: gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>gp_0p_emcee</td>
+                        <td>0p</td>
+                        <td class="">-1375.20</td>
+                        <td class="">91.35</td>
+                        <td class="convergence-warning">90.9%</td>
+                        <td>1.1437</td>
+                    </tr>
+                    <tr>
+                        <td>gp_1p_emcee</td>
+                        <td>1p</td>
+                        <td class="highlight-bic">-1466.55</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-bad">87.5%</td>
+                        <td>1.2031</td>
+                    </tr>
+                    <tr>
+                        <td>gp_2p_emcee</td>
+                        <td>2p</td>
+                        <td class="">-1463.82</td>
+                        <td class="">2.73</td>
+                        <td class="convergence-bad">85.7%</td>
+                        <td>1.2733</td>
+                    </tr>
+                    <tr>
+                        <td>gp_3p_emcee</td>
+                        <td>3p</td>
+                        <td class="">-1453.52</td>
+                        <td class="">13.03</td>
+                        <td class="convergence-bad">84.6%</td>
+                        <td>1.2717</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td>gp_0p_emcee</td><td>0p</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">gp_1p_emcee</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>121.8911</td><td class="gr-converged">1.006</td>
+                            <td>2.4397</td><td class="gr-converged">1.005</td>
+                            <td>341.74</td><td class="gr-converged">1.006</td>
+                            <td>0.0133</td><td>-4.39</td>
+                            <td class="gr-converged">1.005</td><td class="gr-converged">1.005</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">gp_2p_emcee</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>121.9368</td><td class="gr-converged">1.010</td>
+                            <td>2.4364</td><td class="gr-converged">1.011</td>
+                            <td>348.01</td><td class="gr-converged">1.010</td>
+                            <td>0.0184</td><td>-79.23</td>
+                            <td class="gr-converged">1.010</td><td class="gr-converged">1.011</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>29.1168</td><td class="gr-converged">1.010</td>
+                            <td>1.2312</td><td class="gr-converged">1.013</td>
+                            <td>116.01</td><td class="gr-converged">1.009</td>
+                            <td>0.2378</td><td>56.34</td>
+                            <td class="gr-converged">1.014</td><td class="gr-converged">1.011</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">gp_3p_emcee</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>31.2492</td><td class="gr-converged">1.026</td>
+                            <td>1.4936</td><td class="gr-converged">1.020</td>
+                            <td>26.25</td><td class="gr-converged">1.023</td>
+                            <td>0.2651</td><td>32.89</td>
+                            <td class="gr-converged">1.026</td><td class="gr-converged">1.018</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>122.2200</td><td class="gr-converged">1.017</td>
+                            <td>2.1429</td><td class="gr-converged">1.013</td>
+                            <td>380.50</td><td class="gr-converged">1.016</td>
+                            <td>0.0075</td><td>-54.45</td>
+                            <td class="gr-converged">1.014</td><td class="gr-converged">1.017</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>1059.8846</td><td class="gr-converged">1.017</td>
+                            <td>1.4455</td><td class="gr-converged">1.018</td>
+                            <td>7.25</td><td class="gr-converged">1.017</td>
+                            <td>0.0105</td><td>111.08</td>
+                            <td class="gr-converged">1.017</td><td class="gr-converged">1.016</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>gp_0p_emcee</td><td>0p</td>
+                            <td>3176.4460</td><td class="gr-converged">1.005</td>
+                            <td>1831.8378</td><td class="gr-converged">1.015</td>
+                            <td>0.4805</td><td class="gr-converged">1.006</td>
+                        </tr>
+                        <tr>
+                            <td>gp_1p_emcee</td><td>1p</td>
+                            <td>3118.4696</td><td class="gr-converged">1.020</td>
+                            <td>6091.8420</td><td class="gr-converged">1.012</td>
+                            <td>0.5112</td><td class="gr-converged">1.036</td>
+                        </tr>
+                        <tr>
+                            <td>gp_2p_emcee</td><td>2p</td>
+                            <td>3112.7609</td><td class="gr-converged">1.040</td>
+                            <td>6037.6833</td><td class="gr-converged">1.025</td>
+                            <td>0.4443</td><td class="gr-not-converged">1.129</td>
+                        </tr>
+                        <tr>
+                            <td>gp_3p_emcee</td><td>3p</td>
+                            <td>3112.7745</td><td class="gr-not-converged">1.108</td>
+                            <td>6109.2815</td><td class="gr-converged">1.038</td>
+                            <td>0.6635</td><td class="gr-not-converged">1.193</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="gp-label">GPType: no_gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>no_gp_1p_emcee</td>
+                        <td>1p</td>
+                        <td class="highlight-bic">3412.68</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0006</td>
+                    </tr>
+                    <tr>
+                        <td>no_gp_2p_emcee</td>
+                        <td>2p</td>
+                        <td class="">3412.78</td>
+                        <td class="">0.10</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0025</td>
+                    </tr>
+                    <tr>
+                        <td>no_gp_3p_emcee</td>
+                        <td>3p</td>
+                        <td class="">3415.07</td>
+                        <td class="">2.39</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0048</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = no_gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td rowspan="1">no_gp_1p_emcee</td>
+                            <td rowspan="1">1p</td>
+                            <td>b</td>
+                            <td>122.1212</td><td class="gr-converged">1.000</td>
+                            <td>2.4267</td><td class="gr-converged">1.001</td>
+                            <td>14.02</td><td class="gr-converged">1.000</td>
+                            <td>0.0431</td><td>69.87</td>
+                            <td class="gr-converged">1.001</td><td class="gr-converged">1.001</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">no_gp_2p_emcee</td>
+                            <td rowspan="2">2p</td>
+                            <td>b</td>
+                            <td>122.2433</td><td class="gr-converged">1.002</td>
+                            <td>2.2618</td><td class="gr-converged">1.002</td>
+                            <td>379.43</td><td class="gr-converged">1.002</td>
+                            <td>0.0555</td><td>91.02</td>
+                            <td class="gr-converged">1.002</td><td class="gr-converged">1.002</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>25.9434</td><td class="gr-converged">1.002</td>
+                            <td>1.0314</td><td class="gr-converged">1.002</td>
+                            <td>159.96</td><td class="gr-converged">1.002</td>
+                            <td>0.0640</td><td>82.25</td>
+                            <td class="gr-converged">1.002</td><td class="gr-converged">1.003</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">no_gp_3p_emcee</td>
+                            <td rowspan="3">3p</td>
+                            <td>b</td>
+                            <td>25.9578</td><td class="gr-converged">1.003</td>
+                            <td>1.0144</td><td class="gr-converged">1.004</td>
+                            <td>166.22</td><td class="gr-converged">1.003</td>
+                            <td>0.1637</td><td>54.47</td>
+                            <td class="gr-converged">1.004</td><td class="gr-converged">1.004</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>122.3163</td><td class="gr-converged">1.004</td>
+                            <td>2.3335</td><td class="gr-converged">1.003</td>
+                            <td>35.32</td><td class="gr-converged">1.004</td>
+                            <td>0.1454</td><td>96.13</td>
+                            <td class="gr-converged">1.003</td><td class="gr-converged">1.005</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>8.6423</td><td class="gr-converged">1.004</td>
+                            <td>0.8407</td><td class="gr-converged">1.005</td>
+                            <td>410.30</td><td class="gr-converged">1.003</td>
+                            <td>0.0121</td><td>-28.97</td>
+                            <td class="gr-converged">1.004</td><td class="gr-converged">1.004</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>no_gp_1p_emcee</td><td>1p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>no_gp_2p_emcee</td><td>2p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                        <tr>
+                            <td>no_gp_3p_emcee</td><td>3p</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                            <td>-</td><td class="">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="dataset-section">
+            <div class="dataset-header">HD102365_all_instr_ESPRESSO_GP</div>
+            <div class="config-section">
+                <h2>ConfigGroup: all_instr_ESPRESSO_GP</h2>
+                <div class="gp-label">GPType: gp</div>
+                <table>
+                    <tr><th>Configuration</th><th>Planets</th><th>Median BIC</th><th>ΔBIC (GPType)</th><th>Convergence %</th><th>Max GR</th></tr>
+                    <tr>
+                        <td>0p_emcee</td>
+                        <td>nan</td>
+                        <td class="highlight-bic">2460.50</td>
+                        <td class="highlight-bic">0.00</td>
+                        <td class="convergence-warning">90.5%</td>
+                        <td>1.1352</td>
+                    </tr>
+                    <tr>
+                        <td>1p_emcee</td>
+                        <td>nan</td>
+                        <td class="">8036.50</td>
+                        <td class="">5576.00</td>
+                        <td class="convergence-good">100.0%</td>
+                        <td>1.0689</td>
+                    </tr>
+                    <tr>
+                        <td>2p_emcee</td>
+                        <td>nan</td>
+                        <td class="">7970.15</td>
+                        <td class="">5509.65</td>
+                        <td class="convergence-warning">93.5%</td>
+                        <td>1.2515</td>
+                    </tr>
+                    <tr>
+                        <td>3p_emcee</td>
+                        <td>nan</td>
+                        <td class="">7951.73</td>
+                        <td class="">5491.23</td>
+                        <td class="convergence-warning">97.2%</td>
+                        <td>1.1079</td>
+                    </tr>
+                </table>
+                <div class="params-summary-section">
+                    <h3>Parameters Summary (Best Models in GPType = gp)</h3>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Planet</th><th>P (days)</th><th>P_GR</th><th>K (m/s)</th><th>K_GR</th><th>mean_long (°)</th><th>ml_GR</th><th>e</th><th>ω (°)</th><th>coso_GR</th><th>sino_GR</th></tr>
+                        <tr>
+                            <td>0p_emcee</td><td>nan</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                            <td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="1">1p_emcee</td>
+                            <td rowspan="1">nan</td>
+                            <td>b</td>
+                            <td>120.1557</td><td class="gr-converged">1.009</td>
+                            <td>1.0349</td><td class="gr-converged">1.008</td>
+                            <td>168.19</td><td class="gr-converged">1.010</td>
+                            <td>0.3807</td><td>-66.00</td>
+                            <td class="gr-converged">1.010</td><td class="gr-converged">1.012</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">2p_emcee</td>
+                            <td rowspan="2">nan</td>
+                            <td>b</td>
+                            <td>44.0908</td><td class="gr-converged">1.021</td>
+                            <td>1.1992</td><td class="gr-converged">1.014</td>
+                            <td>337.25</td><td class="gr-converged">1.019</td>
+                            <td>0.3500</td><td>-71.04</td>
+                            <td class="gr-converged">1.019</td><td class="gr-converged">1.023</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>120.1930</td><td class="gr-converged">1.016</td>
+                            <td>1.2358</td><td class="gr-converged">1.013</td>
+                            <td>172.24</td><td class="gr-converged">1.014</td>
+                            <td>0.3407</td><td>-80.60</td>
+                            <td class="gr-converged">1.017</td><td class="gr-converged">1.020</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">3p_emcee</td>
+                            <td rowspan="3">nan</td>
+                            <td>b</td>
+                            <td>119.9740</td><td class="gr-converged">1.041</td>
+                            <td>1.1780</td><td class="gr-converged">1.026</td>
+                            <td>145.44</td><td class="gr-converged">1.029</td>
+                            <td>0.3528</td><td>-73.59</td>
+                            <td class="gr-converged">1.027</td><td class="gr-converged">1.027</td>
+                        </tr>
+                        <tr>
+                            <td>c</td>
+                            <td>44.0908</td><td class="gr-converged">1.031</td>
+                            <td>1.0349</td><td class="gr-converged">1.023</td>
+                            <td>337.40</td><td class="gr-converged">1.026</td>
+                            <td>0.1720</td><td>-59.13</td>
+                            <td class="gr-converged">1.030</td><td class="gr-converged">1.032</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>55.9971</td><td class="gr-converged">1.027</td>
+                            <td>0.7103</td><td class="gr-converged">1.024</td>
+                            <td>108.26</td><td class="gr-converged">1.029</td>
+                            <td>0.3428</td><td>-81.05</td>
+                            <td class="gr-converged">1.042</td><td class="gr-converged">1.039</td>
+                        </tr>
+                    </table>
+                    <table class="params-table">
+                        <tr><th>Config</th><th>Model</th><th>Prot (days)</th><th>Prot_GR</th><th>Pdec (days)</th><th>Pdec_GR</th><th>Oamp</th><th>Oamp_GR</th></tr>
+                        <tr>
+                            <td>0p_emcee</td><td>nan</td>
+                            <td>22.6513</td><td class="gr-converged">1.043</td>
+                            <td>16.3617</td><td class="gr-converged">1.041</td>
+                            <td>0.3668</td><td class="gr-converged">1.033</td>
+                        </tr>
+                        <tr>
+                            <td>1p_emcee</td><td>nan</td>
+                            <td>21.1386</td><td class="gr-converged">1.010</td>
+                            <td>17.1821</td><td class="gr-converged">1.010</td>
+                            <td>0.3773</td><td class="gr-converged">1.009</td>
+                        </tr>
+                        <tr>
+                            <td>2p_emcee</td><td>nan</td>
+                            <td>21.5366</td><td class="gr-converged">1.022</td>
+                            <td>15.8124</td><td class="gr-converged">1.012</td>
+                            <td>0.4835</td><td class="gr-converged">1.013</td>
+                        </tr>
+                        <tr>
+                            <td>3p_emcee</td><td>nan</td>
+                            <td>21.0746</td><td class="gr-converged">1.066</td>
+                            <td>16.6719</td><td class="gr-converged">1.047</td>
+                            <td>0.4432</td><td class="gr-converged">1.029</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,2 @@
+pyorbit_run dynesty HD189567.yaml
+pyorbit_results dynesty HD189567.yaml -all > HD189567_HARPS_ESPRESSO_dynesty_2_planet_fit.log
