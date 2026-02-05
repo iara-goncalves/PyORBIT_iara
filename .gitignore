@@ -70,36 +70,6 @@ pyorbit_package.egg-info/
 *.yaml
 *.out
 
-# Do NOT ignore these types of files inside HD102365 directory
-!HD102365/*.py
-!HD102365/**/*.py
-!HD102365/*.ipynb
-!HD102365/**/*.ipynb
-!HD102365/*.sh
-!HD102365/**/*.sh
-!HD102365/*.dat
-!HD102365/**/*.dat
-
-# Do NOT ignore these types of files inside ESSP4 directory
-!ESSP4/*.py
-!ESSP4/**/*.py
-!ESSP4/*.ipynb
-!ESSP4/**/*.ipynb
-!ESSP4/*.sh
-!ESSP4/**/*.sh
-!ESSP4/*.dat
-!ESSP4/**/*.dat
-
-# Do NOT ignore these types of files inside HD189567 directory
-!HD189567/*.py
-!HD189567/**/*.py
-!HD189567/*.ipynb
-!HD189567/**/*.ipynb
-!HD189567/*.sh
-!HD189567/**/*.sh
-!HD189567/*.dat
-!HD189567/**/*.dat
-
 # Ignore everything in HD102365 except the following folders:
 HD102365/*
 !post_analysis
@@ -144,7 +114,6 @@ HD189567/*
 !post_analysis/
 !post_analysis/**
 
-
 # Ignore other PyORBIT_examples folders
 ESSP/
 advanced_examples/
@@ -158,3 +127,33 @@ nested_sampling/
 notebooks/
 quickstart/
 ttv_measurement/
+
+# Do NOT ignore these types of files inside HD102365 directory
+!HD102365/*.py
+!HD102365/**/*.py
+!HD102365/*.ipynb
+!HD102365/**/*.ipynb
+!HD102365/*.sh
+!HD102365/**/*.sh
+!HD102365/*.dat
+!HD102365/**/*.dat
+
+# Do NOT ignore these types of files inside ESSP4 directory
+!ESSP4/*.py
+!ESSP4/**/*.py
+!ESSP4/*.ipynb
+!ESSP4/**/*.ipynb
+!ESSP4/*.sh
+!ESSP4/**/*.sh
+!ESSP4/*.dat
+!ESSP4/**/*.dat
+
+# Do NOT ignore these types of files inside HD189567 directory
+!HD189567/*.py
+!HD189567/**/*.py
+!HD189567/*.ipynb
+!HD189567/**/*.ipynb
+!HD189567/*.sh
+!HD189567/**/*.sh
+!HD189567/*.dat
+!HD189567/**/*.dat
