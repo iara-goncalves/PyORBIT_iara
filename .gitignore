@@ -1,0 +1,125 @@
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.c
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.sql
+*.sqlite
+*/.ipynb_checkpoints/*
+*/pyde/*
+*/emcee/*
+*/dynesty/*
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+build/
+test_compare
+__pycache__
+.idea
+.vscode
+_build
+docs/_build
+dist/
+pyorbit.egg-info/
+pyorbit_package.egg-info/
+
+# Ignore files
+*.p
+*.pyc
+*.pkl
+*.pickle
+*.dat
+*.rdb
+*.fits
+*.png
+*.txt
+*.sh
+*.csv
+*.pdf
+*.tex
+*.aux
+*.out
+
+# Still ignore these globally, but NOT inside HD102365 directory
+*.log
+*.yaml
+
+# Do NOT ignore .log and .yaml files inside HD102365 directory
+!HD102365/**/*.log
+!HD102365/**/*.yaml
+
+# Ignore everything in HD102365 except scripts folders
+HD102365/*
+!ESPRESSO_CCF/
+!ESPRESSO_CCF/**
+!figures/
+!figures/**
+!post_analysis
+!post_analysis/**
+!scripts_HD102365/
+!scripts_HD102365/**
+!processed_data/
+!processed_data/**
+
+# Ignore everything in ESSP4 except scripts folders
+ESSP4/*
+!post_analysis/
+!post_analysis/**
+!ESSP4/scripts/
+!ESSP4/scripts/**
+!ESSP4/scripts_fiesta/
+!ESSP4/scripts_fiesta/**
+!ESSP4/scripts_multiple/
+!ESSP4/scripts_multiple/**
+!ESSP4/scripts_multiple_dynasty/
+!ESSP4/scripts_multiple_dynasty/**
+!ESSP4/submission_csv_files/
+!ESSP4/submission_csv_files/**
+ESSP4/out/
+
+# Ignore other PyORBIT_examples folders
+advanced_examples/
+correlated_models/
+gaussian_processes/
+gp_multiple_seasons/
+gp_newkernels/
+harmonics/
+lightcurves_matern32/
+nested_sampling/
+notebooks/
+quickstart/
+ttv_measurement/
+
+*.out
+# ignore submission results
+*/dynesty/
+*.save
+
+HD102365/submission2/dynesty/dynesty.save
