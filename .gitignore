@@ -70,6 +70,8 @@ pyorbit_package.egg-info/
 *.yaml
 
 # Do NOT ignore these types of files inside HD102365 directory
+!HD102365/**/*.py
+!HD102365/**/*.ipynb
 !HD102365/**/*.log
 !HD102365/**/*.yaml
 !HD102365/**/*.sh
@@ -114,6 +116,7 @@ ESSP4/out/
 
 
 # Ignore other PyORBIT_examples folders
+ESSP/
 advanced_examples/
 correlated_models/
 gaussian_processes/
