@@ -60,35 +60,39 @@ pyorbit_package.egg-info/
 *.fits
 *.png
 *.txt
-*.sh
+#*.sh
 *.csv
 *.pdf
 *.tex
 *.aux
 *.out
-
-# Still ignore these globally, but NOT inside HD102365 directory
 *.log
 *.yaml
 
-# Do NOT ignore .log and .yaml files inside HD102365 directory
+# Do NOT ignore these types of files inside HD102365 directory
 !HD102365/**/*.log
 !HD102365/**/*.yaml
+!HD102365/**/*.sh
+!HD102365/**/*.dat
 
-# Ignore everything in HD102365 except scripts folders
+# Ignore everything in HD102365 except the following folders:
 HD102365/*
-!ESPRESSO_CCF/
-!ESPRESSO_CCF/**
-!figures/
-!figures/**
 !post_analysis
 !post_analysis/**
-!scripts_HD102365/
-!scripts_HD102365/**
 !processed_data/
 !processed_data/**
+!scripts_HD102365/
+!scripts_HD102365/**
+!scripts_HD102365_0p_all/
+!scripts_HD102365_0p_all/**
+!scripts_HD102365_ultranest/
+!scripts_HD102365_ultranest/**
+!scripts_UCLES_HD102365/
+!scripts_UCLES_HD102365/**
+!scripts_all_inst_ESPRESSO_GPHD102365/
+!scripts_all_inst_ESPRESSO_GPHD102365/**
 
-# Ignore everything in ESSP4 except scripts folders
+# Ignore everything in ESSP4 except the following folders:
 ESSP4/*
 !post_analysis/
 !post_analysis/**
@@ -96,6 +100,10 @@ ESSP4/*
 !ESSP4/scripts/**
 !ESSP4/scripts_fiesta/
 !ESSP4/scripts_fiesta/**
+!ESSP4/scripts_fiesta_dynesty/
+!ESSP4/scripts_fiesta_dynesty/**
+!ESSP4/scripts_fiesta_dynesty_1_2_3_4_mode/
+!ESSP4/scripts_fiesta_dynesty_1_2_3_4_mode/**
 !ESSP4/scripts_multiple/
 !ESSP4/scripts_multiple/**
 !ESSP4/scripts_multiple_dynasty/
@@ -103,6 +111,7 @@ ESSP4/*
 !ESSP4/submission_csv_files/
 !ESSP4/submission_csv_files/**
 ESSP4/out/
+
 
 # Ignore other PyORBIT_examples folders
 advanced_examples/
@@ -121,5 +130,3 @@ ttv_measurement/
 # ignore submission results
 */dynesty/
 *.save
-
-HD102365/submission2/dynesty/dynesty.save
