@@ -1,6 +1,0 @@
-NAME="ESSP_gp_all_instruments"
-
-pyorbit_run emcee ${NAME}.yaml
-pyorbit_results emcee ${NAME}.yaml -all > ./${NAME}/${NAME}.log
-
-afplay /System/Library/Sounds/Glass.aiff
