@@ -175,8 +175,8 @@ def load_rdb_files(rdb_dir, file_pattern="HD102365_ESPRESSO*.rdb", exclude_files
         
         # Add dataset identifier
         df_tmp['Dataset'] = os.path.basename(rdb_file).replace('.rdb', '')
-        df_tmp['offset_flag'] = i  # Different offset for each file
-        df_tmp['jitter_flag'] = i  # Different jitter for each file
+        df_tmp['offset_flag'] = 0  # Different offset for each file
+        df_tmp['jitter_flag'] = 0  # Different jitter for each file
         
         df_list.append(df_tmp)
     
@@ -301,7 +301,7 @@ def detect_outliers_rdb(df, sigma_thresholds=None, default_sigma=3):
     else:
         default_threshold = default_sigma
     
-    cols_to_check = ['vrad', 'bis_span', 'fwhm']
+    cols_to_check = ['vrad', 'bis_span', 'fwhm', 'rhk', 'ha']
     
     for dataset in df['Dataset'].unique():
         threshold = sigma_thresholds.get(dataset, default_threshold)
@@ -447,6 +447,22 @@ def save_rdb_concatenated(df, outdir, exclude_outliers=True):
     np.savetxt(fwhm_outfile, fwhm_data, fmt=["%.6f", "%.6f", "%.6f", "%d", "%d", "%d"])
     print(f"Saved: {fwhm_outfile}")
 
+    # Save RHK data
+    rhk = df_export['rhk'].values
+    rhk_err = df_export['sig_rhk'].values
+    rhk_data = np.column_stack([time, rhk, rhk_err, jitter_flag, offset_flag, subset_flag])
+    rhk_outfile = os.path.join(outdir, "HD102365_ESPRESSO_RHK.dat")
+    np.savetxt(rhk_outfile, rhk_data, fmt=["%.6f", "%.6f", "%.6f", "%d", "%d", "%d"])
+    print(f"Saved: {rhk_outfile}")
+
+    # Save H-alpha (ha) data
+    ha = df_export['ha'].values
+    ha_err = df_export['sig_ha'].values
+    ha_data = np.column_stack([time, ha, ha_err, jitter_flag, offset_flag, subset_flag])
+    ha_outfile = os.path.join(outdir, "HD102365_ESPRESSO_EWHa.dat")
+    np.savetxt(ha_outfile, ha_data, fmt=["%.6f", "%.6f", "%.6f", "%d", "%d", "%d"])
+    print(f"Saved: {ha_outfile}")
+
 def plot_all_instruments_timeseries(df_dat, fig_dir):
     """Plot time series of RV data for all non-ESPRESSO instruments (table3.dat)."""
     fig, ax = plt.subplots(figsize=(14, 6))
@@ -565,87 +581,82 @@ def plot_all_instruments(df_dat, df_rdb, fig_dir):
     print(f"Saved figure: {fig_path}")
     plt.close()
 
-
 def plot_instrument_timeseries(inst, inst_df, fig_dir):
-    """Plot time series for a single instrument with ONLY available indicators."""
+    """Plot time series for a single instrument."""
     
-    # Decide which panels exist for this instrument
-    panels = [('RV', 'e_RV', 'RV [m/s]')]  # always
-
-    if 'SHK' in inst_df.columns and inst_df['SHK'].notna().any():
-        panels.append(('SHK', 'e_SHK', 'S_HK Index'))
-
-    if 'EWHa' in inst_df.columns and inst_df['EWHa'].notna().any():
-        panels.append(('EWHa', 'e_EWHa', r'EW H$\alpha$ [0.1 Å]'))
-
-    n_panels = len(panels)
-
-    fig, axes = plt.subplots(
-        n_panels, 1,
-        figsize=(12, 3.2 * n_panels),
-        sharex=True
-    )
-    if n_panels == 1:
-        axes = [axes]
-
-    # Sort once for nicer lines/points
-    inst_df = inst_df.sort_values('BJD').copy()
-
-    for ax, (col, err_col, ylabel) in zip(axes, panels):
-        valid = inst_df[inst_df[col].notna()].copy()
-
-        inliers = valid[~valid['is_outlier']]
-        outliers = valid[valid['is_outlier']]
-
-        # y-errors (if present)
-        yerr_in = inliers[err_col].values if (err_col in valid.columns) else None
-        yerr_out = outliers[err_col].values if ((err_col in valid.columns) and (len(outliers) > 0)) else None
-
-        # Inliers
+    fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+    
+    plot_info = [
+        ('RV', 'e_RV', 'RV [m/s]'),
+        ('SHK', 'e_SHK', 'S_HK Index'),
+        ('EWHa', 'e_EWHa', 'EW H-alpha [0.1 Å]')
+    ]
+    
+    for ax, (col, err_col, ylabel) in zip(axes, plot_info):
+        if col not in inst_df.columns or inst_df[col].isna().all():
+            ax.text(0.5, 0.5, f"No {col} data", 
+                   ha='center', va='center', transform=ax.transAxes)
+            ax.set_ylabel(ylabel)
+            continue
+        
+        # Filter out NaN values
+        valid_data = inst_df[inst_df[col].notna()].copy()
+        
+        if len(valid_data) == 0:
+            ax.text(0.5, 0.5, f"No valid {col} data", 
+                   ha='center', va='center', transform=ax.transAxes)
+            ax.set_ylabel(ylabel)
+            continue
+        
+        # Split into inliers and outliers
+        inliers = valid_data[~valid_data['is_outlier']]
+        outliers = valid_data[valid_data['is_outlier']]
+        
+        # Get errors
+        if err_col in valid_data.columns:
+            yerr_in = inliers[err_col].values
+            yerr_out = outliers[err_col].values if len(outliers) > 0 else None
+        else:
+            yerr_in = None
+            yerr_out = None
+        
+        # Plot inliers
         if not inliers.empty:
-            ax.errorbar(
-                inliers['BJD'], inliers[col], yerr=yerr_in,
-                fmt="o", color="skyblue", label="Data",
-                alpha=0.7, markersize=5
-            )
-
-        # Outliers
+            ax.errorbar(inliers['BJD'], inliers[col], yerr=yerr_in,
+                       fmt="o", color="skyblue", label="Data", 
+                       alpha=0.7, markersize=5)
+        
+        # Plot outliers
         if not outliers.empty:
-            ax.errorbar(
-                outliers['BJD'], outliers[col], yerr=yerr_out,
-                fmt="o", color="black", alpha=0.7, markersize=7,
-                markeredgecolor="red", markeredgewidth=1.5,
-                label="Outliers"
-            )
-
+            ax.errorbar(outliers['BJD'], outliers[col], yerr=yerr_out,
+                       fmt="o", color="black", alpha=0.7, markersize=7,
+                       markeredgecolor="red", markeredgewidth=1.5,
+                       label="Outliers")
+        
         ax.set_ylabel(ylabel)
         ax.grid(True, alpha=0.3)
-
-        # Only add legend if something was actually plotted
-        handles, labels = ax.get_legend_handles_labels()
-        if handles:
-            ax.legend(loc='best')
-
+        ax.legend(loc='best')
+    
     axes[-1].set_xlabel("BJD")
     fig.suptitle(f"HD102365 - {inst}")
-
     plt.tight_layout(rect=[0, 0, 1, 0.97])
+    
     fig_path = os.path.join(fig_dir, f"HD102365_{inst}_timeseries.png")
     plt.savefig(fig_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
     print(f"Saved figure: {fig_path}")
 
-
-
 def plot_espresso_timeseries(df, fig_dir):
     """Plot ESPRESSO time series with different datasets colored."""
     
-    fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+    fig, axes = plt.subplots(5, 1, figsize=(12, 12), sharex=True)
     
     plot_info = [
         ('vrad', 'svrad', 'RV [m/s]'),
         ('bis_span', 'sig_bis_span', 'BIS [m/s]'),
-        ('fwhm', 'sig_fwhm', 'FWHM [m/s]')
+        ('fwhm', 'sig_fwhm', 'FWHM [m/s]'),
+        ('rhk', 'sig_rhk', 'RHK Index'),
+        ('ha', 'sig_ha', 'EW H-alpha'),
     ]
     
     # Get unique datasets and assign colors
@@ -704,7 +715,7 @@ def main():
     data_dir = "/work2/lbuc/iara/GitHub/PyORBIT_iara/HD102365"
     dat_file = os.path.join(data_dir, "table3.dat")
     outdir = os.path.join(data_dir, "processed_data")
-    fig_dir = os.path.join(data_dir, "figures_thesis")
+    fig_dir = os.path.join(data_dir, "figures")
     
     os.makedirs(outdir, exist_ok=True)
     os.makedirs(fig_dir, exist_ok=True)
@@ -754,7 +765,7 @@ def main():
     print("=" * 60)
     
     # Exclude the problematic file
-    exclude_files = ['HD102365_ESPRESSO19_2.rdb', 'HD102365_ESPRESSO19_3.rdb']
+    exclude_files = ['HD102365_ESPRESSO18_2.rdb', 'HD102365_ESPRESSO19_2.rdb', 'HD102365_ESPRESSO19_3.rdb']
     #exclude_files = []
 
     df_rdb = load_rdb_files(data_dir, 

@@ -1,4 +1,11 @@
 # HD102365_figures.py
+#
+# Interactive plots on a server:
+#   - Set SAVE_INTERACTIVE_HTML = True below; install mpld3 (pip install mpld3).
+#     Script will also write .html files. Download them and open in a browser
+#     for zoom, pan, and (where supported) hover.
+#   - Or use X11 forwarding: ssh -X user@server, then set backend and use
+#     plt.show() instead of/in addition to savefig (window opens on your machine).
 
 import os
 import numpy as np
@@ -9,8 +16,29 @@ from scipy.signal import find_peaks
 
 import matplotlib as mpl
 
+# Set True to also save interactive HTML (requires: pip install mpld3)
+SAVE_INTERACTIVE_HTML = False
+
+try:
+    import mpld3
+except ImportError:
+    mpld3 = None
+
 THESIS_FONTSIZE = 17
 SMALL = 9
+
+
+def _save_interactive_html(fig, png_path):
+    """If SAVE_INTERACTIVE_HTML is True and mpld3 is available, save an HTML copy."""
+    if not SAVE_INTERACTIVE_HTML or mpld3 is None:
+        return
+    html_path = png_path.replace(".png", ".html")
+    try:
+        mpld3.save_html(fig, html_path)
+        print(f"  Interactive: {html_path}")
+    except Exception as e:
+        print(f"  Warning: could not save HTML: {e}")
+
 
 mpl.rcParams.update({
     "font.size": THESIS_FONTSIZE,
@@ -89,9 +117,9 @@ def load_dat_files(data_dir):
                 elif measurement == 'SHK':
                     df['S_HK Index'] = data[:, 1]
                     df['S_HK Err.'] = data[:, 2]
-                # elif measurement == 'RHK':
-                #     df['RHK'] = data[:, 1]
-                #     df['RHK Err.'] = data[:, 2]
+                elif measurement == 'RHK':
+                    df['RHK'] = data[:, 1]
+                    df['RHK Err.'] = data[:, 2]
                 
                 # Merge with existing instrument data
                 if inst_data is None:
@@ -119,6 +147,19 @@ def load_dat_files(data_dir):
     else:
         raise ValueError("No data loaded!")
 
+
+def spectral_window_power(t, freq):
+    """
+    Spectral window (squared magnitude of Fourier transform of the sampling).
+    Returns power in [0, 1], same length as freq. Use same time series t and
+    frequency grid freq as the data periodogram.
+    """
+    # W(f) = (1/N^2) * | sum_n exp(2*pi*i*f*t_n) |^2
+    exp_terms = np.exp(2j * np.pi * np.outer(freq, t))
+    window_power = np.abs(exp_terms.sum(axis=1)) ** 2 / (len(t) ** 2)
+    return window_power
+
+
 def plot_activity_with_periodograms(instrument, inst_df, fig_dir):
     """
     Plot activity indicators with Lomb-Scargle periodograms.
@@ -134,7 +175,7 @@ def plot_activity_with_periodograms(instrument, inst_df, fig_dir):
         ("BIS [m/s]", "BIS Err. [m/s]", "BIS [m/s]"),
         ("EW H-alpha", "EW H-alpha Err.", "EW H-alpha"),
         ("S_HK Index", "S_HK Err.", "S_HK Index"),
-        # ("RHK", "RHK Err.", "RHK Index"),
+        ("RHK", "RHK Err.", "RHK Index"),
     ]
     
     # Filter to only include indicators with data
@@ -346,6 +387,14 @@ def plot_activity_with_periodograms(instrument, inst_df, fig_dir):
                     # Convert to periods for plotting
                     periods = 1.0 / freq
                     
+                    # Spectral window: Fourier transform of the sampling pattern
+                    power_window = spectral_window_power(t, freq)
+                    power_window_scaled = power_window / np.max(power_window) * np.max(power)
+                    ax_period.semilogx(
+                        periods, -power_window_scaled,
+                        color='red', linestyle='-', alpha=0.8, linewidth=1.5,
+                        label='Window'
+                    )
                     # Plot periodogram
                     ax_period.semilogx(periods, power, 'k-', linewidth=1)
                     
@@ -382,18 +431,18 @@ def plot_activity_with_periodograms(instrument, inst_df, fig_dir):
                             )
                     
                     # Add reference lines for common periods
-                    # reference_periods = [1, 7, 14, 28, 100, 365]
-                    # for ref_period in reference_periods:
-                    #     if min_period <= ref_period <= max_period:
-                    #         ax_period.axvline(
-                    #             ref_period, color='blue', alpha=0.3,
-                    #             linestyle=':', linewidth=1
-                    #         )
-                    #         ax_period.text(
-                    #             ref_period, ax_period.get_ylim()[1]*0.85,
-                    #             f'{ref_period}d', rotation=90, ha='right',
-                    #             va='top', fontsize=SMALL, alpha=0.6, color='blue'
-                    #         )
+                    reference_periods = [1, 7, 14, 28, 100, 365]
+                    for ref_period in reference_periods:
+                        if min_period <= ref_period <= max_period:
+                            ax_period.axvline(
+                                ref_period, color='blue', alpha=0.3,
+                                linestyle=':', linewidth=1
+                            )
+                            ax_period.text(
+                                ref_period, ax_period.get_ylim()[1]*0.85,
+                                f'{ref_period}d', rotation=90, ha='right',
+                                va='top', fontsize=SMALL, alpha=0.6, color='blue'
+                            )
                     
                     ax_period.set_xlabel("Period [days]")
                     ax_period.set_ylabel("LS Power")
@@ -466,6 +515,7 @@ def plot_activity_with_periodograms(instrument, inst_df, fig_dir):
         fig_dir, f"HD102365_{instrument}_activity_LS_periodograms.png"
     )
     plt.savefig(fig_path, dpi=150, bbox_inches='tight')
+    _save_interactive_html(fig, fig_path)
     plt.close(fig)
     print(f"  Saved: {fig_path}")
 
@@ -704,6 +754,14 @@ def plot_combined_rv_non_espresso_with_periodogram(df_all, fig_dir):
                 print("  No significant peaks found in combined non-ESPRESSO RVs.")
 
             periods = 1.0 / freq
+            # Spectral window: Fourier transform of the sampling pattern
+            power_window = spectral_window_power(t, freq)
+            power_window_scaled = power_window / np.max(power_window) * np.max(power)
+            ax_ls.semilogx(
+                periods, -power_window_scaled,
+                color="red", linestyle="-", alpha=0.8, linewidth=1.5,
+                label="Window",
+            )
             ax_ls.semilogx(periods, power, "k-", linewidth=1)
 
             for fap_power, col, lab in zip(fap_powers, fap_colors, fap_labels):
@@ -738,23 +796,23 @@ def plot_combined_rv_non_espresso_with_periodogram(df_all, fig_dir):
                     label=label,
                 )
 
-            # reference_periods = [1, 7, 14, 28, 100, 365]
-            # for refP in reference_periods:
-            #     if min_period <= refP <= max_period:
-            #         ax_ls.axvline(
-            #             refP, color="blue", linestyle=":", alpha=0.25, linewidth=1
-            #         )
-            #         ax_ls.text(
-            #             refP,
-            #             ax_ls.get_ylim()[1] * 0.85,
-            #             f"{refP}d",
-            #             rotation=90,
-            #             ha="right",
-            #             va="top",
-            #             fontsize=SMALL,
-            #             alpha=0.6,
-            #             color="blue",
-            #         )
+            reference_periods = [1, 7, 14, 28, 100, 365]
+            for refP in reference_periods:
+                if min_period <= refP <= max_period:
+                    ax_ls.axvline(
+                        refP, color="blue", linestyle=":", alpha=0.25, linewidth=1
+                    )
+                    ax_ls.text(
+                        refP,
+                        ax_ls.get_ylim()[1] * 0.85,
+                        f"{refP}d",
+                        rotation=90,
+                        ha="right",
+                        va="top",
+                        fontsize=SMALL,
+                        alpha=0.6,
+                        color="blue",
+                    )
 
             ax_ls.set_xlabel("Period [days]")
             ax_ls.set_ylabel("LS Power")
@@ -798,6 +856,7 @@ def plot_combined_rv_non_espresso_with_periodogram(df_all, fig_dir):
 
     outpath = os.path.join(fig_dir, "HD102365_all_non_ESPRESSO_RV_combined_LS.png")
     plt.savefig(outpath, dpi=150, bbox_inches="tight")
+    _save_interactive_html(fig, outpath)
     plt.close(fig)
     print(f"  Saved combined non-ESPRESSO RV figure: {outpath}")
 
@@ -1019,6 +1078,14 @@ def plot_combined_rv_with_periodogram(df_all, fig_dir):
                 print("  No significant peaks found in combined ALL-instrument RVs.")
 
             periods = 1.0 / freq
+            # Spectral window: Fourier transform of the sampling pattern
+            power_window = spectral_window_power(t, freq)
+            power_window_scaled = power_window / np.max(power_window) * np.max(power)
+            ax_ls.semilogx(
+                periods, -power_window_scaled,
+                color="red", linestyle="-", alpha=0.8, linewidth=1.5,
+                label="Window",
+            )
             ax_ls.semilogx(periods, power, "k-", linewidth=1)
 
             for fap_power, col, lab in zip(fap_powers, fap_colors, fap_labels):
@@ -1053,23 +1120,23 @@ def plot_combined_rv_with_periodogram(df_all, fig_dir):
                     label=label,
                 )
 
-            # reference_periods = [1, 7, 14, 28, 100, 365]
-            # for refP in reference_periods:
-            #     if min_period <= refP <= max_period:
-            #         ax_ls.axvline(
-            #             refP, color="blue", linestyle=":", alpha=0.25, linewidth=1
-            #         )
-            #         ax_ls.text(
-            #             refP,
-            #             ax_ls.get_ylim()[1] * 0.85,
-            #             f"{refP}d",
-            #             rotation=90,
-            #             ha="right",
-            #             va="top",
-            #             fontsize=SMALL,
-            #             alpha=0.6,
-            #             color="blue",
-            #         )
+            reference_periods = [1, 7, 14, 28, 100, 365]
+            for refP in reference_periods:
+                if min_period <= refP <= max_period:
+                    ax_ls.axvline(
+                        refP, color="blue", linestyle=":", alpha=0.25, linewidth=1
+                    )
+                    ax_ls.text(
+                        refP,
+                        ax_ls.get_ylim()[1] * 0.85,
+                        f"{refP}d",
+                        rotation=90,
+                        ha="right",
+                        va="top",
+                        fontsize=SMALL,
+                        alpha=0.6,
+                        color="blue",
+                    )
 
             ax_ls.set_xlabel("Period [days]")
             ax_ls.set_ylabel("LS Power")
@@ -1112,6 +1179,7 @@ def plot_combined_rv_with_periodogram(df_all, fig_dir):
 
     outpath = os.path.join(fig_dir, "HD102365_all_instruments_RV_combined_LS.png")
     plt.savefig(outpath, dpi=150, bbox_inches="tight")
+    _save_interactive_html(fig, outpath)
     plt.close(fig)
     print(f"  Saved combined ALL-instruments RV figure: {outpath}")
 
@@ -1119,7 +1187,7 @@ def main():
     """Main function"""
     
     data_dir = "/work2/lbuc/iara/GitHub/PyORBIT_iara/HD102365/processed_data"
-    fig_dir = "/work2/lbuc/iara/GitHub/PyORBIT_iara/HD102365_thesis"
+    fig_dir = "/work2/lbuc/iara/GitHub/PyORBIT_iara/HD102365/figures"
     
     os.makedirs(fig_dir, exist_ok=True)
     
